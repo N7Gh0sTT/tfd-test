@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informations du joueur</title>
+  <style>
+    .module-tiers {
+        display: inline-block;
+        position: relative;
+        width: 100px; 
+        height: 100px;
+    }
+
+    .module-tiers.blue {
+        background-color: blue;
+    }
+
+    .module-tiers.purple {
+        background-color: purple;
+    }
+
+    .module-tiers.yellow {
+        background-color: yellow;
+    }
+
+    .module-tiers.red {
+        background-color: red;
+    }
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .module-item {
+      position: relative;
+      text-align: center;
+    }
+
+    .module-item img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .module-name {
+      margin-top: 5px;
+      font-size: 14px;
+    }
+
+    .module-description {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #000;
+            color: #fff;
+            padding: 5px;
+            border-radius: 4px;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: normal;
+            max-width: 200px;
+            text-align: left;
+            overflow-wrap: break-word; 
+            box-sizing: border-box;
+        }
+
+    .module-item:hover .module-description {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Recherche d'informations du joueur</h1>
+  <form id="playerForm">
+    <label for="playerName">Nom du joueur (format: nomdujoueur#1234, respectez la casse):</label>
+    <input type="text" id="playerName" name="playerName" required>
+    <button type="submit">Rechercher</button>
+  </form>
+  <div id="playerInfo"></div>
+  <div id="modulesContainer" class="module-grid"></div>
+
+  <script>
+    let descendantMetadata = [];
+    let moduleMetadata = [];
+    fetch('./descendant.json')
+      .then(response => response.json())
+      .then(data => {
+        descendantMetadata = data;
+      })
+      .catch(error => {
+        console.error('Erreur lors du chargement des métadonnées des descendants:', error);
+      });
+    fetch('./module.json')
+      .then(response => response.json())
+      .then(data => {
+        moduleMetadata = data;
+      })
+      .catch(error => {
+        console.error('Erreur lors du chargement des métadonnées des modules:', error);
+      });
+    document.getElementById('playerForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const playerName = document.getElementById('playerName').value;
+
+      fetchPlayerId(playerName);
+    });
+
+    function fetchPlayerId(playerName) {
+      const apiKey = 'test_c8134b23f6fe670e0a610bfa21f740f6950d10496ce88515b9a1c7fa2aded2efefe8d04e6d233bd35cf2fabdeb93fb0d';
+      const url = `https://open.api.nexon.com/tfd/v1/id?user_name=${encodeURIComponent(playerName)}`;
+
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'x-nxopen-api-key': apiKey
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.ouid) {
+            fetchPlayerInfo(data.ouid);
+          } else {
+            document.getElementById('playerInfo').innerText = 'Joueur non trouvé.';
+          }
+        })
+        .catch(error => {
+          console.error('Erreur:', error);
+          document.getElementById('playerInfo').innerText = 'Erreur lors de la récupération de l\'ID du joueur.';
+        });
+    }
+
+    function fetchPlayerInfo(ouid) {
+      const apiKey = 'test_c8134b23f6fe670e0a610bfa21f740f6950d10496ce88515b9a1c7fa2aded2efefe8d04e6d233bd35cf2fabdeb93fb0d';
+      const basicInfoUrl = `https://open.api.nexon.com/tfd/v1/user/basic?ouid=${ouid}`;
+      const descendantInfoUrl = `https://open.api.nexon.com/tfd/v1/user/descendant?ouid=${ouid}`;
+
+      Promise.all([
+        fetch(basicInfoUrl, {
+          method: 'GET',
+          headers: {
+            'x-nxopen-api-key': apiKey
+          }
+        }).then(response => response.json()),
+        fetch(descendantInfoUrl, {
+          method: 'GET',
+          headers: {
+            'x-nxopen-api-key': apiKey
+          }
+        }).then(response => response.json())
+      ])
+        .then(results => {
+          const basicInfo = results[0];
+          const descendantInfo = results[1];
+          displayPlayerInfo(basicInfo, descendantInfo);
+          displayModules(descendantInfo.module || []);
+        })
+        .catch(error => {
+          console.error('Erreur:', error);
+          document.getElementById('playerInfo').innerText = 'Erreur lors de la récupération des informations du joueur.';
+        });
+    }
+
+    function displayPlayerInfo(basicInfo, descendantInfo) {
+      const playerInfoDiv = document.getElementById('playerInfo');
+      const descendantMeta = descendantMetadata.find(meta => meta.descendant_id === descendantInfo.descendant_id);
+      const descendantName = descendantMeta ? descendantMeta.descendant_name : 'Nom inconnu';
+      const descendantImg = descendantMeta ? descendantMeta.descendant_image_url : '';
+
+      playerInfoDiv.innerHTML = `
+                <h2>Informations de base du joueur</h2>
+                <p>Nom: ${basicInfo.user_name}</p>
+                <p>Niveau de maîtrise: ${basicInfo.mastery_rank_level}</p>
+                <h2>Descendant actuel:</h2>
+                <p>Nom: ${descendantName} <img src='${descendantImg}' alt='Image de ${descendantName}'/></p>
+                <p>Niveau: ${descendantInfo.descendant_level}</p>
+                <p>Capacité de modules: ${descendantInfo.module_capacity}/${descendantInfo.module_max_capacity}</p>
+
+            `;
+    }
+    function displayModules(modules) {
+      const modulesContainer = document.getElementById('modulesContainer');
+
+      const modulesHtml = modules.map(module => {
+        const moduleMeta = moduleMetadata.find(meta => meta.module_id === module.module_id);
+        const moduleName = moduleMeta ? moduleMeta.module_name : 'Nom inconnu';
+        const moduleImageUrl = moduleMeta ? moduleMeta.image_url : '';
+        const moduleStat = moduleMeta && moduleMeta.module_stat ? moduleMeta.module_stat.find(stat => stat.level === module.module_enchant_level) : {};
+        const moduleDescription = moduleStat ? moduleStat.value : 'Description non disponible';
+
+        let moduleTierClass = '';
+            switch (moduleMeta.module_tier) {
+                case 'Normal':
+                    moduleTierClass = 'blue';
+                    break;
+                case 'Rare':
+                    moduleTierClass = 'purple';
+                    break;
+                case 'Ultime':
+                    moduleTierClass = 'yellow';
+                    break;
+                case 'Transcendant':
+                    moduleTierClass = 'red';
+                    break;
+                default:
+                    moduleTierClass = '';
+            }
+
+        return `
+                    <div class="module-item">
+                    <div class="module-tiers ${moduleTierClass}">
+                        <img src="${moduleImageUrl}" alt="${moduleName}">
+                    </div>
+                    <div class="module-name">${moduleName}(lvl.${module.module_enchant_level})</div>
+                    <div class="module-description">${moduleDescription}</div>
+                </div>
+                `;
+      }).join('');
+
+      modulesContainer.innerHTML = modulesHtml;
+    }
+  </script>
+</body>
+
+</html>
