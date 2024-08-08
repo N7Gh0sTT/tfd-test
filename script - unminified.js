@@ -326,7 +326,7 @@ function displayWeapon(weapons) {
             }
 
             modulesHTML += `
-                <div class="moduleCard">
+                <div class="moduleCard" onmouseover="showDescription(event)" onmouseout="hideDescription(event)">
                     <div class="CardModuleInfo">
                         <div class="socketBanner">
                             <img width="20" height="20" src="./img/${moduleSocketType}.png">
