@@ -195,7 +195,7 @@ function displayModules(modules) {
         <div class="moduleCard" onmouseover="showDescription(event)" onmouseout="hideDescription(event)">
         <div class="CardModuleInfo">
             <div class="socketBanner">
-                <img width="20" height="20" src="/img/${moduleMeta.module_socket_type}.png">
+                <img width="20" height="20" src="./img/${moduleMeta.module_socket_type}.png">
                 <span>${moduleCost}</span>
             </div>
             <div class="moduleImg ${moduleTierClass}">
@@ -329,7 +329,7 @@ function displayWeapon(weapons) {
                 <div class="moduleCard">
                     <div class="CardModuleInfo">
                         <div class="socketBanner">
-                            <img width="20" height="20" src="/img/${moduleSocketType}.png">
+                            <img width="20" height="20" src="./img/${moduleSocketType}.png">
                             <span>${moduleCost}</span>
                         </div>
                         <div class="moduleImg ${moduleTierClass}">

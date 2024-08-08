@@ -14,7 +14,7 @@ let descendantMetadata=[],moduleMetadata=[],weaponMetadata=[],reactorMetadata=[]
         <div class="moduleCard" onmouseover="showDescription(event)" onmouseout="hideDescription(event)">
         <div class="CardModuleInfo">
             <div class="socketBanner">
-                <img width="20" height="20" src="/img/${t.module_socket_type}.png">
+                <img width="20" height="20" src="./img/${t.module_socket_type}.png">
                 <span>${i}</span>
             </div>
             <div class="moduleImg ${l}">
@@ -58,7 +58,7 @@ let descendantMetadata=[],moduleMetadata=[],weaponMetadata=[],reactorMetadata=[]
                 <div class="moduleCard">
                     <div class="CardModuleInfo">
                         <div class="socketBanner">
-                            <img width="20" height="20" src="/img/${i}.png">
+                            <img width="20" height="20" src="./img/${i}.png">
                             <span>${s}</span>
                         </div>
                         <div class="moduleImg ${r}">
