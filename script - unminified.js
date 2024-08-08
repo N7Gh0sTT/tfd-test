@@ -303,7 +303,7 @@ function displayWeapon(weapons) {
             const moduleName = moduleMeta ? moduleMeta.module_name : 'Nom inconnu';
             const moduleImageUrl = moduleMeta ? moduleMeta.image_url : '';
             const moduleStat = moduleMeta && moduleMeta.module_stat ? moduleMeta.module_stat.find(stat => stat.level === module.module_enchant_level) : {};
-            const moduleDescription = moduleMeta ? moduleMeta.description : 'Description non disponible';
+            const moduleDescription = moduleStat ? moduleStat.value : 'Description non disponible';
             const moduleSocketType = moduleMeta ? moduleMeta.module_socket_type : 'Inconnu';
             const moduleCost = moduleStat ? moduleStat.module_capacity : '-';
 
